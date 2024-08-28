@@ -1,0 +1,75 @@
+/* *****************************************************************************
+ *  Name:              Alan Turing
+ *  Coursera User ID:  123456
+ *  Last modified:     1/1/2019
+ **************************************************************************** */
+
+import edu.princeton.cs.algs4.WeightedQuickUnionUF;
+
+public class Percolation {
+    public int isopen;
+    private static final int top = 0;
+    private final int low;
+    private boolean[][] grid;
+    public int size;
+    private final WeightedQuickUnionUF uf;
+    private int[][] movements = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } };
+
+    public Percolation(int n) {
+        if (n <= 0) {
+            throw new IllegalArgumentException();
+        }
+        size = n;
+        low = n * n + 1;
+        grid = new boolean[n][n];
+        uf = new WeightedQuickUnionUF(n * n + 2);
+        isopen = 0;
+    }
+
+    public void open(int row, int col) {
+        if (row <= 0 || col <= 0 || row > size || col > size) {
+            throw new IllegalArgumentException();
+        }
+        grid[row - 1][col - 1] = true;
+        isopen++;
+        if (row == 1) {
+            uf.union(col, top);
+        }
+        if (row == size) {
+            uf.union(size * (row - 1) + col, low);
+        }
+        for (int i = 0; i < 4; i++) {
+            if (movements[i][0] + row > 0 && movements[i][1] + col > 0
+                    && movements[i][0] + row <= size && movements[i][1] + col <= size) {
+                if (isOpen(movements[i][0] + row, movements[i][1] + col)) {
+                    uf.union(size * (row - 1) + col,
+                             size * (movements[i][0] + row - 1) + col + movements[i][1]);
+                }
+            }
+        }
+    }
+
+    public boolean isOpen(int row, int col) {
+        if (row <= 0 || col <= 0 || row > size || col > size) {
+            throw new IllegalArgumentException();
+        }
+        return grid[row - 1][col - 1];
+    }
+
+    public boolean isFull(int row, int col) {
+        if (row <= 0 || col <= 0 || row > size || col > size) {
+            throw new IllegalArgumentException();
+        }
+        return uf.find(top) == uf.find(size * (row - 1) + col);
+    }
+
+    public int numberOfOpenSites() {
+        return isopen;
+    }
+
+    public boolean percolates() {
+        return uf.find(top) == uf.find(low);
+    }
+
+
+}
